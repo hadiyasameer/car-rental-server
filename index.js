@@ -8,8 +8,7 @@ import dotenv from "dotenv";
 import seedAdmin from "./utils/seedAdmin.js"
 
 dotenv.config();
-//nCJo28JMigDQegSk
-//mongodb+srv://hadiyasameer2013:nCJo28JMigDQegSk@cluster0.zxi3pxm.mongodb.net/
+
 connectDB();
 
 seedAdmin();

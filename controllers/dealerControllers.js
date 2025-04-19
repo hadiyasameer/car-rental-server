@@ -24,8 +24,10 @@ export const dealerSignup = async (req, res, next) => {
         const newDealer = new Dealer({ name, email, password: hashedPassword, mobileNumber, profilePicture })
         await newDealer.save();
 
-        const token = generateToken(newDealer._id, "dealer")
-        res.cookie("token", token, {
+        const tokenPayload = (newDealer._id, "dealer" );
+        const dealer_token = generateToken(tokenPayload);
+        
+        res.cookie("dealer_token", dealer_token, {
             sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
             secure: process.env.NODE_ENV === "production",
             httponly: process.env.NODE_ENV === "production"
@@ -52,9 +54,11 @@ export const dealerLogin = async (req, res, next) => {
             return res.status(401).json({ message: "dealer not authenticated" })
         }
 
-        const tokenPayload = { id: isDealerExist._id, role: isDealerExist.role };
-        const token = generateToken(tokenPayload);
-         res.cookie("token", token, {
+      
+        const dealer_token = generateToken(isDealerExist._id, "dealer");
+
+        
+        res.cookie("dealer_token", dealer_token, {
             sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
             secure: process.env.NODE_ENV === "production",
             httponly: process.env.NODE_ENV === "production"
@@ -70,7 +74,7 @@ export const dealerLogin = async (req, res, next) => {
 
 export const dealerLogout = async (req, res, next) => {
     try {
-        res.clearCookie("token", {
+        res.clearCookie("dealer_token", {
             sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
             secure: process.env.NODE_ENV === "production",
             httponly: process.env.NODE_ENV === "production"
@@ -86,7 +90,7 @@ export const dealerProfile = async (req, res, next) => {
     try {
 
         const dealerId = req.user.id;
-        const dealerData = await Dealer.findById(dealerId.id).select("-password")
+        const dealerData = await Dealer.findById(dealerId).select("-password")
         return res.json({ data: dealerData, message: "dealer profile fetched" })
     } catch (error) {
         return res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" })

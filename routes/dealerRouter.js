@@ -9,7 +9,7 @@ router.put("/login", dealerLogin)
 
 router.get("/profile", dealerAuth(), dealerProfile);
 
-router.get("/logout", dealerAuth(), dealerLogout);
+router.get("/logout", dealerLogout);
 
 router.get("/check-dealer", dealerAuth(), checkDealer);
 
