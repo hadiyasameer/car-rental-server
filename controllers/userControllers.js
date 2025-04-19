@@ -23,8 +23,8 @@ export const userSignup = async (req, res, next) => {
         const userData = new User({ name, email, password: hashedPassword, mobileNumber, address, profilePicture })
         await userData.save();
 
-        const token = generateToken(userData._id)
-        res.cookie("token", token, {
+        const user_token = generateToken(userData._id)
+        res.cookie("user_token", user_token, {
             sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
             secure: process.env.NODE_ENV === "production",
             httponly: process.env.NODE_ENV === "production"
@@ -50,8 +50,8 @@ export const userLogin = async (req, res, next) => {
         if (!passwordMatch) {
             return res.status(401).json({ message: "user not authenticated" })
         }
-        const token = generateToken(userExist._id)
-        res.cookie("token", token, {
+        const user_token = generateToken(userExist._id)
+        res.cookie("user_token", user_token, {
             sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
             secure: process.env.NODE_ENV === "production",
             httponly: process.env.NODE_ENV === "production"
@@ -67,7 +67,7 @@ export const userLogin = async (req, res, next) => {
 
 export const userLogout = async (req, res, next) => {
     try {
-        res.clearCookie("token", {
+        res.clearCookie("user_token", {
             sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
             secure: process.env.NODE_ENV === "production",
             httponly: process.env.NODE_ENV === "production"

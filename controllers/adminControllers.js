@@ -1,7 +1,6 @@
 import { Dealer } from "../models/dealerModel.js";
 import bcrypt from "bcrypt";
-import { generateToken } from "../utils/token.js"; // Make sure this handles role
-// Example: generateToken(userId, role)
+import { generateToken } from "../utils/token.js";
 
 export const adminLogin = async (req, res, next) => {
     try {
@@ -23,9 +22,9 @@ export const adminLogin = async (req, res, next) => {
             return res.status(401).json({ message: "Invalid credentials" });
         }
 
-        const token = generateToken(admin._id, "admin");
+        const admin_token = generateToken(admin._id, "admin");
 
-        res.cookie("token", token, {
+        res.cookie("admin_token", admin_token, {
             sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
             secure: process.env.NODE_ENV === "production",
             httpOnly: true,

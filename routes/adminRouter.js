@@ -4,7 +4,7 @@ import { adminAuth } from "../middlewares/adminAuth.js";
 
 const router = e.Router();
 
-router.put("/login", adminLogin)
+router.put("/login",adminLogin)
 router.get("/logout", adminAuth, adminLogout);
 
 export { router as adminRouter }
