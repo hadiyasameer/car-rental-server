@@ -27,7 +27,7 @@ export const createCar = async (req, res) => {
             return res.status(400).json({ message: "You have already added this car" })
         }
 
-        const newCar = new Car({ dealer: dealerId, title, make, model, year, carType, fuelType, transmission, seatingCapacity, pricePerDay, availability, description, images:cloudinaryRes, location })
+        const newCar = new Car({ dealer: dealerId, title, make, model, year, carType, fuelType, transmission, seatingCapacity, pricePerDay, availability, description, image:cloudinaryRes, location })
         await newCar.save();
 
         return res.status(201).json({ data: newCar, message: "Car details added" })
@@ -52,7 +52,9 @@ export const updateCar = async (req, res) => {
     try {
         const { carId } = req.params;
         const dealerId = req.user.id;
-        const { title, pricePerDay, availability, description, images, location } = req.body;
+        const { title, pricePerDay, availability, description, image, location } = req.body;
+        let imageUrl;
+
         console.log("Dealer ID:", dealerId);
         console.log("Car ID:", carId);
         console.log("Request Body:", req.body);
@@ -62,7 +64,11 @@ export const updateCar = async (req, res) => {
             return res.status(404).json({ message: "Car not found or unauthorized" });
         }
 
-        const updatedCar = await Car.findByIdAndUpdate(carId, { title, pricePerDay, availability, description, images, location }, { new: true })
+        if(req.file){
+            const cloudinaryRes=await uploadToCloudinary(req.file.path)
+            imageUrl=cloudinaryRes;
+        }
+        const updatedCar = await Car.findByIdAndUpdate(carId, { title, pricePerDay, availability, description, image:imageUrl, location }, { new: true })
         return res.status(200).json({ data: updatedCar, message: "Car updated successfully" });
 
     } catch (error) {
