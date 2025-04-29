@@ -7,7 +7,7 @@ const router = e.Router();
 
 router.post("/addcar", upload.single("image"), dealerAuth(), createCar)
 router.get("/carlist", listCars)
-router.put("/updatecar/:carId", dealerAuth(), updateCar)
+router.put("/updatecar/:carId",upload.single("image"), dealerAuth(), updateCar)
 router.get("/viewcar/:carId", dealerAuth(), viewCar);
 router.delete("/deletecar/:carId", dealerAuth(), deleteCar)
 

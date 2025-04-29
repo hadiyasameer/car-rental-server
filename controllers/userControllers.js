@@ -6,7 +6,7 @@ export const userSignup = async (req, res, next) => {
     try {
         console.log("hitted");
         const { name, email, password, confirmPassword, mobileNumber, address, profilePicture } = req.body;
-        if (!name || !email || !password || !confirmPassword || !mobileNumber || !address) {
+        if (!name || !email || !password || !confirmPassword || !mobileNumber) {
             return res.status(400).json({ message: "all fields are required" })
         }
         if (password !== confirmPassword) {
