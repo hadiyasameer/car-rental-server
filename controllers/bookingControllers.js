@@ -52,7 +52,7 @@ export const createBooking = async (req, res) => {
 export const viewBookings = async (req, res) => {
   try {
     const userId = req.user.id;
-    const bookings = await Booking.find({ userId }).populate('carId');
+    const bookings = await Booking.find({ userId ,status: { $ne: 'cancelled'}}).populate('carId');
     res.status(200).json(bookings);
   } catch (error) {
     res.status(500).json({ message: error.message || 'Server error' });
