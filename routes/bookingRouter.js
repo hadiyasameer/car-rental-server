@@ -6,7 +6,7 @@ import { dealerAuth } from "../middlewares/dealerAuth.js"
 
 const router = express.Router();
 
-router.post("/createbooking", userAuth, createBooking)
+router.post("/createbooking/:carId", userAuth, createBooking)
 router.delete("/cancelbooking/:bookingId", userAuth, cancelBooking)
 router.get("/viewbooking", userAuth, viewBookings)
 router.get("/adminbooking", adminAuth, adminBookings)

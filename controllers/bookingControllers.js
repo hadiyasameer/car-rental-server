@@ -4,10 +4,12 @@ import { Car } from '../models/carModel.js';
 //create booking by user
 export const createBooking = async (req, res) => {
   try {
-    const { carId, startDate, endDate } = req.body;
+    const carId = req.params.carId;
+    const { startDate, endDate } = req.body;
+    console.log("Authenticated user:", req.user);
+
     const userId = req.user.id;
 
-    // Check if the car is available during that range
     const existingBooking = await Booking.findOne({
       carId,
       status: { $in: ['pending', 'confirmed'] },
@@ -41,9 +43,11 @@ export const createBooking = async (req, res) => {
     await booking.save();
     res.status(201).json({ data: booking, message: "Booking created" });
   } catch (error) {
+    console.error('Error creating booking:', error); // helpful for debugging
     res.status(500).json({ message: error.message || "Server error" });
   }
 };
+
 // Get user's bookings
 export const viewBookings = async (req, res) => {
   try {
@@ -112,7 +116,7 @@ export const dealerBookings = async (req, res) => {
     if (dealerCars.length === 0) {
       return res.status(200).json({ data: [], message: "No cars found for this dealer" });
     }
-    
+
     const carIds = dealerCars.map(car => car._id);
 
     // Find bookings for those cars
@@ -125,7 +129,7 @@ export const dealerBookings = async (req, res) => {
         path: 'userId',
         select: 'name email',
       });
-   
+
     res.status(200).json({ data: bookings, message: "Bookings for dealer's cars fetched successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message || 'Server error' });
