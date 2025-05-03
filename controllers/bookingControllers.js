@@ -41,6 +41,8 @@ export const createBooking = async (req, res) => {
     });
 
     await booking.save();
+    console.log({ userId, carId, startDate, endDate, totalPrice });
+
     res.status(201).json({ data: booking, message: "Booking created" });
   } catch (error) {
     console.error('Error creating booking:', error); // helpful for debugging
@@ -52,7 +54,9 @@ export const createBooking = async (req, res) => {
 export const viewBookings = async (req, res) => {
   try {
     const userId = req.user.id;
-    const bookings = await Booking.find({ userId ,status: { $ne: 'cancelled'}}).populate('carId');
+    const bookings = await Booking.find({
+      userId, status: { $nin: ['cancelled', 'completed'] }
+    }).populate('carId');
     res.status(200).json(bookings);
   } catch (error) {
     res.status(500).json({ message: error.message || 'Server error' });
@@ -78,6 +82,42 @@ export const cancelBooking = async (req, res) => {
     res.status(500).json({ message: error.message || 'Server error' });
   }
 };
+
+//clear booking
+export const clearBooking = async (req, res) => {
+  try {
+    const { bookingId } = req.body;
+
+    if (!bookingId) {
+      return res.status(400).json({ error: 'Missing bookingId' });
+    }
+
+    await Booking.findByIdAndDelete(bookingId);
+    // const userId = req.user.id;
+    // const userBooking = await Booking.findOne({ userId })
+    // if (!userBooking) {
+    //   return res.status(404).json({ error: "booking not found" })
+    // }
+    // userBooking.carId = null
+    // await userBooking.save()
+    res.status(200).json({ message: "booking cleared" });
+  } catch (error) {
+    console.error("Clear booking error:", error);
+    res.status(500).json({ message: error.message || 'Server error' });
+  }
+}
+
+//update booking status
+// export const updateBookingStatus = async (req, res) => {
+//   try {
+//     const { status } = req.body;
+//     await Booking.findByIdAndUpdate(req.params.id, { status });
+//     res.json({ success: true });
+//   } catch (err) {
+//     res.status(500).json({ error: 'Failed to update booking status' });
+//   }
+// };
+
 
 //Admin only booking list
 export const adminBookings = async (req, res) => {
