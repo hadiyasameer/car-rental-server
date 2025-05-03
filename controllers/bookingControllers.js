@@ -128,7 +128,7 @@ export const adminBookings = async (req, res) => {
     }
 
     // Populate both car and user details
-    const bookings = await Booking.find()
+    const bookings = await Booking.find({ status: { $ne: 'cancelled' } })
       .populate({
         path: 'carId',
         select: 'title make model year pricePerDay',

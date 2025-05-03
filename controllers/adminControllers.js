@@ -2,6 +2,7 @@ import { Dealer } from "../models/dealerModel.js";
 import bcrypt from "bcrypt";
 import { generateToken } from "../utils/token.js";
 
+
 export const adminLogin = async (req, res, next) => {
     try {
         const { email, password } = req.body;
@@ -40,7 +41,7 @@ export const adminLogin = async (req, res, next) => {
 
 export const adminLogout = async (req, res, next) => {
     try {
-        res.clearCookie("token", {
+        res.clearCookie("admin_token", {
             sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
             secure: process.env.NODE_ENV === "production",
             httponly: process.env.NODE_ENV === "production"
