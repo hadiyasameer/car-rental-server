@@ -39,12 +39,34 @@ export const createCar = async (req, res) => {
 
 export const listCars = async (req, res) => {
     try {
-        const { carType } = req.query;
-        const normalizedType = carType?.trim();
+        const { carType, make, model, location, minPrice, maxPrice } = req.query;
+        // const normalizedType = carType?.trim();
 
-        const filter = normalizedType
-            ? { carType: { $regex: new RegExp(`^${normalizedType}$`, 'i') } }
-            : {};
+        // const filter = normalizedType
+        //     ? { carType: { $regex: new RegExp(`^${normalizedType}$`, 'i') } }
+        //     : {};
+        const filter = {};
+
+        if (carType?.trim()) {
+            filter.carType = { $regex: new RegExp(`^${carType.trim()}$`, 'i') };
+        }
+
+        if (make?.trim()) {
+            filter.make = { $regex: new RegExp(`^${make.trim()}$`, 'i') };
+        }
+
+        if (model?.trim()) {
+            filter.model = model.trim(); // assuming it's a year like "2022"
+        }
+
+        if (location?.trim()) {
+            filter.location = { $regex: new RegExp(`^${location.trim()}$`, 'i') };
+        }
+        if (minPrice || maxPrice) {
+            filter.price = {};
+            if (minPrice) filter.price.$gte = Number(minPrice);
+            if (maxPrice) filter.price.$lte = Number(maxPrice);
+        }
 
 
         const carList = await Car.find(filter);
