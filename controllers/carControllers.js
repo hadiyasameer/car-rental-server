@@ -39,12 +39,8 @@ export const createCar = async (req, res) => {
 
 export const listCars = async (req, res) => {
     try {
-        const { carType, make, model, location, minPrice, maxPrice } = req.query;
-        // const normalizedType = carType?.trim();
-
-        // const filter = normalizedType
-        //     ? { carType: { $regex: new RegExp(`^${normalizedType}$`, 'i') } }
-        //     : {};
+        const { carType, make, model, location, minPrice, maxPrice, dealerId  } = req.query;
+        
         const filter = {};
 
         if (carType?.trim()) {
@@ -67,7 +63,9 @@ export const listCars = async (req, res) => {
             if (minPrice) filter.price.$gte = Number(minPrice);
             if (maxPrice) filter.price.$lte = Number(maxPrice);
         }
-
+        if (dealerId?.trim()) {
+            filter.dealer = new mongoose.Types.ObjectId(dealerId.trim());
+        }
 
         const carList = await Car.find(filter);
         res.status(200).json(carList)

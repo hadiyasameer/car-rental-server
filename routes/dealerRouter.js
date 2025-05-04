@@ -5,7 +5,7 @@ import { dealerAuth } from "../middlewares/dealerAuth.js";
 const router = e.Router();
 
 router.post("/signup", dealerSignup)
-router.put("/login", dealerLogin)
+router.post("/login", dealerLogin)
 
 router.get("/profile", dealerAuth(), dealerProfile);
 
