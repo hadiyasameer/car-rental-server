@@ -9,17 +9,17 @@ export const createCar = async (req, res) => {
         if (!title || !make || !model || !year || !carType || !fuelType || !transmission || !seatingCapacity || !pricePerDay) {
             return res.status(400).json({ message: "All fields are required" })
         }
-        if(!req.file){
+        if (!req.file) {
             return res.status(400).json({ error: "image not found" })
         }
         let cloudinaryRes;
         try {
-            cloudinaryRes=await uploadToCloudinary(req.file.path)
+            cloudinaryRes = await uploadToCloudinary(req.file.path)
             console.log("image", cloudinaryRes);
         } catch (error) {
             return res.status(500).json({ message: "Image upload failed", error: error.message });
-        }        
-        
+        }
+
         const dealerId = req.user.id;
 
         const isCarExist = await Car.findOne({ dealer: dealerId, title });
@@ -27,7 +27,7 @@ export const createCar = async (req, res) => {
             return res.status(400).json({ message: "You have already added this car" })
         }
 
-        const newCar = new Car({ dealer: dealerId, title, make, model, year, carType, fuelType, transmission, seatingCapacity, pricePerDay, availability, description, image:cloudinaryRes, location })
+        const newCar = new Car({ dealer: dealerId, title, make, model, year, carType, fuelType, transmission, seatingCapacity, pricePerDay, availability, description, image: cloudinaryRes, location })
         await newCar.save();
 
         return res.status(201).json({ data: newCar, message: "Car details added" })
@@ -39,7 +39,15 @@ export const createCar = async (req, res) => {
 
 export const listCars = async (req, res) => {
     try {
-        const carList = await Car.find();
+        const { carType } = req.query;
+        const normalizedType = carType?.trim();
+
+        const filter = normalizedType
+            ? { carType: { $regex: new RegExp(`^${normalizedType}$`, 'i') } }
+            : {};
+
+
+        const carList = await Car.find(filter);
         res.status(200).json(carList)
     } catch (error) {
         console.log(error);
@@ -64,11 +72,11 @@ export const updateCar = async (req, res) => {
             return res.status(404).json({ message: "Car not found or unauthorized" });
         }
 
-        if(req.file){
-            const cloudinaryRes=await uploadToCloudinary(req.file.path)
-            imageUrl=cloudinaryRes;
+        if (req.file) {
+            const cloudinaryRes = await uploadToCloudinary(req.file.path)
+            imageUrl = cloudinaryRes;
         }
-        const updatedCar = await Car.findByIdAndUpdate(carId, { title, pricePerDay, availability, description, image:imageUrl, location }, { new: true })
+        const updatedCar = await Car.findByIdAndUpdate(carId, { title, pricePerDay, availability, description, image: imageUrl, location }, { new: true })
         return res.status(200).json({ data: updatedCar, message: "Car updated successfully" });
 
     } catch (error) {

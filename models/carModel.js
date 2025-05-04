@@ -7,7 +7,7 @@ const carSchema = new Schema({
   make: { type: String, required: true },
   model: { type: String, required: true },
   year: { type: Number, required: true },
-  carType: { type: String, enum: ['sedan', 'SUV', 'offroad'], required: true },
+  carType: { type: String, enum: ['sedan', 'SUV', 'offroad','luxury'], required: true },
   fuelType: { type: String, enum: ['petrol', 'diesel', 'electric', 'hybrid'], required: true },
   transmission: { type: String, enum: ['manual', 'automatic'], required: true },
   seatingCapacity: { type: Number, required: true },
