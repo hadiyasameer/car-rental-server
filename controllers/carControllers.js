@@ -44,7 +44,7 @@ export const listCars = async (req, res) => {
         const filter = {};
 
         if (carType?.trim()) {
-            filter.carType = { $regex: new RegExp(`^${carType.trim()}$`, 'i') };
+            filter.carType = { $regex: carType.trim(), $options: 'i' };
         }
 
         if (make?.trim()) {
