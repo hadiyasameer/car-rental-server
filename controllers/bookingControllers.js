@@ -55,13 +55,30 @@ export const viewBookings = async (req, res) => {
   try {
     const userId = req.user.id;
     const bookings = await Booking.find({
-      userId, status: { $nin: ['cancelled', 'completed'] }
+      userId, status: 'pending'
     }).populate('carId');
     res.status(200).json(bookings);
   } catch (error) {
     res.status(500).json({ message: error.message || 'Server error' });
   }
 };
+//user's confirmed booking
+// export const viewConfirmedBookings = async (req, res) => {
+//   try {
+//     const userId = req.user.id;
+
+//     const bookings = await Booking.find({
+//       userId,
+//       status: 'confirmed'
+//     }).populate('carId');
+
+//     res.status(200).json(bookings);
+//   } catch (error) {
+//     console.error('Error fetching confirmed bookings:', error);
+//     res.status(500).json({ message: error.message || 'Server error' });
+//   }
+// };
+
 
 // Cancel booking
 export const cancelBooking = async (req, res) => {
@@ -92,20 +109,20 @@ export const clearBooking = async (req, res) => {
       return res.status(400).json({ error: 'Missing bookingId' });
     }
 
-    await Booking.findByIdAndDelete(bookingId);
-    // const userId = req.user.id;
-    // const userBooking = await Booking.findOne({ userId })
-    // if (!userBooking) {
-    //   return res.status(404).json({ error: "booking not found" })
-    // }
-    // userBooking.carId = null
-    // await userBooking.save()
-    res.status(200).json({ message: "booking cleared" });
+    const booking = await Booking.findById(bookingId);
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    booking.status = "confirmed";
+    await booking.save();
+
+    res.status(200).json({ message: "Booking confirmed" });
   } catch (error) {
     console.error("Clear booking error:", error);
     res.status(500).json({ message: error.message || 'Server error' });
   }
-}
+};
 
 //update booking status
 // export const updateBookingStatus = async (req, res) => {
@@ -122,12 +139,10 @@ export const clearBooking = async (req, res) => {
 //Admin only booking list
 export const adminBookings = async (req, res) => {
   try {
-    // Only allow access if the user is an admin
     if (req.user.role !== 'admin') {
       return res.status(403).json({ message: "Access denied. Admins only." });
     }
 
-    // Populate both car and user details
     const bookings = await Booking.find({ status: { $ne: 'cancelled' } })
       .populate({
         path: 'carId',
@@ -148,9 +163,8 @@ export const adminBookings = async (req, res) => {
 
 export const dealerBookings = async (req, res) => {
   try {
-    const dealerId = req.user.id; // assuming this is set by auth middleware
+    const dealerId = req.user.id;
 
-    // Get all cars added by the dealer
     const dealerCars = await Car.find({ dealer: dealerId }).select('_id');
 
     if (dealerCars.length === 0) {
@@ -159,8 +173,10 @@ export const dealerBookings = async (req, res) => {
 
     const carIds = dealerCars.map(car => car._id);
 
-    // Find bookings for those cars
-    const bookings = await Booking.find({ carId: { $in: carIds } })
+    const bookings = await Booking.find({
+      carId: { $in: carIds },
+      status: 'confirmed'
+    })
       .populate({
         path: 'carId',
         select: 'title make model year pricePerDay',
