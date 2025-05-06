@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Car } from "../models/carModel.js"
 import { uploadToCloudinary } from "../utils/imageUpload.js";
 
@@ -39,33 +40,37 @@ export const createCar = async (req, res) => {
 
 export const listCars = async (req, res) => {
     try {
-        const { carType, make, model, location, minPrice, maxPrice, dealerId  } = req.query;
-        
+
+        const { carType, make, minPrice, maxPrice, dealerId  } = req.query;
+    
         const filter = {};
 
-        if (carType?.trim()) {
+        if (typeof carType === 'string' && carType.trim()) {
             filter.carType = { $regex: carType.trim(), $options: 'i' };
         }
 
-        if (make?.trim()) {
-            filter.make = { $regex: new RegExp(`^${make.trim()}$`, 'i') };
+        if (typeof make === 'string' && make.trim()) {
+            filter.make = make.trim();
         }
 
-        if (model?.trim()) {
-            filter.model = model.trim(); // assuming it's a year like "2022"
+        if (!isNaN(minPrice) || !isNaN(maxPrice)) {
+            filter.pricePerDay = {};
+            if (!isNaN(minPrice)) filter.pricePerDay.$gte = Number(minPrice);
+            if (!isNaN(maxPrice)) filter.pricePerDay.$lte = Number(maxPrice);
         }
 
-        if (location?.trim()) {
-            filter.location = { $regex: new RegExp(`^${location.trim()}$`, 'i') };
+        if (dealerId && mongoose.Types.ObjectId.isValid(dealerId)) {
+            filter.dealer = new mongoose.Types.ObjectId(dealerId);
         }
-        if (minPrice || maxPrice) {
-            filter.price = {};
-            if (minPrice) filter.price.$gte = Number(minPrice);
-            if (maxPrice) filter.price.$lte = Number(maxPrice);
-        }
-        if (dealerId?.trim()) {
-            filter.dealer = new mongoose.Types.ObjectId(dealerId.trim());
-        }
+
+        // if (year?.trim()) {
+        //     filter.model = year.trim();
+        // }
+
+        // if (location?.trim()) {
+        //     filter.location = { $regex: new RegExp(`^${location.trim()}$`, 'i') };
+        // }
+        
 
         const carList = await Car.find(filter);
         res.status(200).json(carList)
