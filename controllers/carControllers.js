@@ -141,3 +141,19 @@ export const deleteCar = async (req, res) => {
         return res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" })
     }
 }
+
+// export const dealerCars = async (req, res) => {
+//   try {
+//     const dealerId = req.user.id;
+
+//     const dealerCars = await Car.find({ dealer: dealerId });
+
+//     if (dealerCars.length === 0) {
+//       return res.status(200).json({ data: [], message: "No cars added yet" });
+//     }
+
+    
+//   } catch (error) {
+//     return res.status(500).json({ message: error.message || 'Server error' });
+//   }
+// };

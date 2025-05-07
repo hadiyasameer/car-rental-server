@@ -43,10 +43,10 @@ export const createBooking = async (req, res) => {
     await booking.save();
     console.log({ userId, carId, startDate, endDate, totalPrice });
 
-    res.status(201).json({ data: booking, message: "Booking created" });
+    return res.status(201).json({ data: booking, message: "Booking created" });
   } catch (error) {
     console.error('Error creating booking:', error); // helpful for debugging
-    res.status(500).json({ message: error.message || "Server error" });
+    return res.status(500).json({ message: error.message || "Server error" });
   }
 };
 
@@ -57,9 +57,9 @@ export const viewBookings = async (req, res) => {
     const bookings = await Booking.find({
       userId, status: 'pending'
     }).populate('carId');
-    res.status(200).json(bookings);
+    return res.status(200).json(bookings);
   } catch (error) {
-    res.status(500).json({ message: error.message || 'Server error' });
+    return res.status(500).json({ message: error.message || 'Server error' });
   }
 };
 //user's confirmed booking
@@ -94,9 +94,9 @@ export const cancelBooking = async (req, res) => {
     booking.status = 'cancelled';
     await booking.save();
 
-    res.status(200).json({ message: 'Booking cancelled successfully' });
+    return res.status(200).json({ message: 'Booking cancelled successfully' });
   } catch (error) {
-    res.status(500).json({ message: error.message || 'Server error' });
+    return res.status(500).json({ message: error.message || 'Server error' });
   }
 };
 
@@ -117,10 +117,10 @@ export const clearBooking = async (req, res) => {
     booking.status = "confirmed";
     await booking.save();
 
-    res.status(200).json({ message: "Booking confirmed" });
+    return res.status(200).json({ message: "Booking confirmed" });
   } catch (error) {
     console.error("Clear booking error:", error);
-    res.status(500).json({ message: error.message || 'Server error' });
+    return res.status(500).json({ message: error.message || 'Server error' });
   }
 };
 
@@ -153,9 +153,9 @@ export const adminBookings = async (req, res) => {
         select: 'name email',
       });
 
-    res.status(200).json({ data: bookings, message: "All bookings fetched successfully" });
+    return res.status(200).json({ data: bookings, message: "All bookings fetched successfully" });
   } catch (error) {
-    res.status(500).json({ message: error.message || 'Server error' });
+    return res.status(500).json({ message: error.message || 'Server error' });
   }
 };
 
@@ -186,8 +186,8 @@ export const dealerBookings = async (req, res) => {
         select: 'name email',
       });
 
-    res.status(200).json({ data: bookings, message: "Bookings for dealer's cars fetched successfully" });
+    return res.status(200).json({ data: bookings, message: "Bookings for dealer's cars fetched successfully" });
   } catch (error) {
-    res.status(500).json({ message: error.message || 'Server error' });
+    return res.status(500).json({ message: error.message || 'Server error' });
   }
 };
