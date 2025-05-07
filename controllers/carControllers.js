@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { Types } from "mongoose";
 import { Car } from "../models/carModel.js"
 import { uploadToCloudinary } from "../utils/imageUpload.js";
 
@@ -43,9 +44,12 @@ export const listCars = async (req, res) => {
     try {
 
         const { ObjectId } = Types;
-        const { carType, make, minPrice, maxPrice} = req.query;
-    
+        const { carType, make, minPrice, maxPrice, dealerId } = req.query;
+
         const filter = {};
+        if (dealerId && mongoose.Types.ObjectId.isValid(dealerId)) {
+            filter.dealer = new ObjectId(dealerId);
+        }
 
         if (typeof carType === 'string' && carType.trim()) {
             filter.carType = { $regex: carType.trim(), $options: 'i' };
@@ -61,15 +65,15 @@ export const listCars = async (req, res) => {
             if (!isNaN(maxPrice)) filter.pricePerDay.$lte = Number(maxPrice);
         }
 
-    
-            // if (year?.trim()) {
+
+        // if (year?.trim()) {
         //     filter.model = year.trim();
         // }
 
         // if (location?.trim()) {
         //     filter.location = { $regex: new RegExp(`^${location.trim()}$`, 'i') };
         // }
-        
+
 
         const carList = await Car.find(filter);
         res.status(200).json(carList)
