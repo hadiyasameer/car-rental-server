@@ -41,7 +41,7 @@ export const createCar = async (req, res) => {
 export const listCars = async (req, res) => {
     try {
 
-        const { carType, make, minPrice, maxPrice, dealerId  } = req.query;
+        const { carType, make, minPrice, maxPrice  } = req.query;
     
         const filter = {};
 
@@ -59,9 +59,12 @@ export const listCars = async (req, res) => {
             if (!isNaN(maxPrice)) filter.pricePerDay.$lte = Number(maxPrice);
         }
 
-        if (dealerId && mongoose.Types.ObjectId.isValid(dealerId)) {
-            filter.dealer = new mongoose.Types.ObjectId(dealerId);
+        const dealerId = req.user.id;
+        if (!dealerId || !mongoose.Types.ObjectId.isValid(dealerId)) {
+            return res.status(403).json({ message: "Unauthorized or invalid dealer ID" });
         }
+
+        filter.dealer = dealerId;
 
         // if (year?.trim()) {
         //     filter.model = year.trim();
