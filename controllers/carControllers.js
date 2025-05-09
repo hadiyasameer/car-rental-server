@@ -76,6 +76,8 @@ export const listCars = async (req, res) => {
 
 
         const carList = await Car.find(filter);
+            console.log("Fetched cars:", carList); // ✅ Check isAvailable values
+
         res.status(200).json(carList)
     } catch (error) {
         console.log(error);
