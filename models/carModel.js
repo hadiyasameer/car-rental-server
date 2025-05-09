@@ -12,7 +12,7 @@ const carSchema = new Schema({
   transmission: { type: String, enum: ['manual', 'automatic'], required: true },
   seatingCapacity: { type: Number, required: true },
   pricePerDay: { type: Number, required: true },
-  availability: { type: Boolean, default: true },
+  isAvailable: { type: Boolean, default: true },
   description: { type: String, },
   image: [{ type: String }],
   location: { type: String },
