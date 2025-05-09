@@ -8,7 +8,7 @@ export const createCar = async (req, res) => {
     try {
         console.log("Add car details")
 
-        const { title, make, model, year, carType, fuelType, transmission, seatingCapacity, pricePerDay, availability, description, location } = req.body;
+        const { title, make, model, year, carType, fuelType, transmission, seatingCapacity, pricePerDay, isAvailable, description, location } = req.body;
         if (!title || !make || !model || !year || !carType || !fuelType || !transmission || !seatingCapacity || !pricePerDay) {
             return res.status(400).json({ message: "All fields are required" })
         }
@@ -30,7 +30,7 @@ export const createCar = async (req, res) => {
             return res.status(400).json({ message: "You have already added this car" })
         }
 
-        const newCar = new Car({ dealer: dealerId, title, make, model, year, carType, fuelType, transmission, seatingCapacity, pricePerDay, availability, description, image: cloudinaryRes, location })
+        const newCar = new Car({ dealer: dealerId, title, make, model, year, carType, fuelType, transmission, seatingCapacity, pricePerDay, isAvailable, description, image: cloudinaryRes, location })
         await newCar.save();
 
         return res.status(201).json({ data: newCar, message: "Car details added" })
@@ -90,7 +90,7 @@ export const updateCar = async (req, res) => {
     try {
         const { carId } = req.params;
         const dealerId = req.user.id;
-        const { title, pricePerDay, availability, description, image, location } = req.body;
+        const { title, pricePerDay, isAvailable, description, image, location } = req.body;
         let imageUrl;
 
         console.log("Dealer ID:", dealerId);
@@ -106,7 +106,7 @@ export const updateCar = async (req, res) => {
             const cloudinaryRes = await uploadToCloudinary(req.file.path)
             imageUrl = cloudinaryRes;
         }
-        const updatedCar = await Car.findByIdAndUpdate(carId, { title, pricePerDay, availability, description, image: imageUrl, location }, { new: true })
+        const updatedCar = await Car.findByIdAndUpdate(carId, { title, pricePerDay, isAvailable, description, image: imageUrl, location }, { new: true })
         return res.status(200).json({ data: updatedCar, message: "Car updated successfully" });
 
     } catch (error) {
