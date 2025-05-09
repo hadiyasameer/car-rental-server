@@ -7,6 +7,6 @@ const router = e.Router();
 
 router.post("/login",adminLogin)
 router.post("/logout", adminAuth, adminLogout);
-router.get("/admin/dealers", adminAuth,getAllDealers)
+router.get("/admin/dealers",getAllDealers)
 
 export { router as adminRouter }
