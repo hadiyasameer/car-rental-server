@@ -90,7 +90,8 @@ export const updateCar = async (req, res) => {
     try {
         const { carId } = req.params;
         const dealerId = req.user.id;
-        const { title, pricePerDay, isAvailable, description, image, location } = req.body;
+        let { title, pricePerDay, isAvailable, description, image, location } = req.body;
+        isAvailable = isAvailable === 'true' || isAvailable === true;
         let imageUrl;
 
         console.log("Dealer ID:", dealerId);
