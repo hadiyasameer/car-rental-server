@@ -36,6 +36,7 @@ export const createBooking = async (req, res) => {
       carId,
       startDate,
       endDate,
+      rentalDays,
       totalPrice,
       status: "pending",
     });
@@ -146,7 +147,7 @@ export const adminBookings = async (req, res) => {
     const bookings = await Booking.find({ status: { $ne: 'cancelled' } })
       .populate({
         path: 'carId',
-        select: 'title make model year totalPrice image',
+        select: 'title totalPrice image ',
       })
       .populate({
         path: 'userId',
@@ -179,7 +180,7 @@ export const dealerBookings = async (req, res) => {
     })
       .populate({
         path: 'carId',
-        select: 'title make model year pricePerDay image',
+        select: 'title totalPrice image rentalDays',
       })
       .populate({
         path: 'userId',
