@@ -179,7 +179,7 @@ export const dealerBookings = async (req, res) => {
     })
       .populate({
         path: 'carId',
-        select: 'title make model year pricePerDay',
+        select: 'title make model year pricePerDay image',
       })
       .populate({
         path: 'userId',
