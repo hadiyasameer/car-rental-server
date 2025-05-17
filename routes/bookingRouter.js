@@ -1,5 +1,5 @@
 import express from "express"
-import { createBooking, cancelBooking, viewBookings, adminBookings, dealerBookings} from "../controllers/bookingControllers.js";
+import { createBooking, cancelBooking, viewBookings, adminBookings, dealerBookings, getBookedDatesForCar} from "../controllers/bookingControllers.js";
 import { clearBooking } from "../controllers/bookingControllers.js";
 import { userAuth } from "../middlewares/userAuth.js";
 import { adminAuth } from "../middlewares/adminAuth.js";
@@ -14,6 +14,8 @@ router.get("/viewbooking", userAuth, viewBookings)
 router.get("/adminbooking", adminAuth, adminBookings)
 router.get("/dealerbooking", dealerAuth(), dealerBookings)
 router.post('/clearbooking',userAuth, clearBooking);
+router.get('/booked-dates/:carId', getBookedDatesForCar);
+
 
 // router.put('/update-booking-status/:id', updateBookingStatus);
 

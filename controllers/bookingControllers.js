@@ -192,3 +192,26 @@ export const dealerBookings = async (req, res) => {
     return res.status(500).json({ message: error.message || 'Server error' });
   }
 };
+
+// Get booked date ranges for a specific car
+export const getBookedDatesForCar = async (req, res) => {
+  try {
+    const { carId } = req.params;
+    if (!carId) return res.status(400).json({ error: 'Missing carId' });
+
+    const bookings = await Booking.find({
+      carId,
+      status: { $in: ['pending', 'confirmed'] }
+    }).select('startDate endDate');
+
+    const bookedRanges = bookings.map(b => ({
+      startDate: b.startDate,
+      endDate: b.endDate
+    }));
+
+    res.status(200).json({ data: bookedRanges });
+  } catch (error) {
+    console.error("Error fetching booked dates:", error);
+    res.status(500).json({ message: error.message || "Server error" });
+  }
+};
