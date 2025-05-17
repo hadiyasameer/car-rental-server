@@ -1,4 +1,5 @@
 import { Dealer } from "../models/dealerModel.js";
+import { User } from "../models/userModel.js"
 import bcrypt from "bcrypt";
 import { generateToken } from "../utils/token.js";
 
@@ -54,10 +55,54 @@ export const adminLogout = async (req, res, next) => {
 }
 export const getAllDealers = async (req, res) => {
     try {
-        const dealers = await Dealer.find({}, '_id name'); 
+        const dealers = await Dealer.find({ role: 'dealer' }, '_id name mobileNumber email profilePicture');
+        console.log("Dealers fetched:", dealers);
         res.status(200).json(dealers);
     } catch (error) {
         console.error('Error fetching dealers:', error);
         res.status(500).json({ message: 'Failed to fetch dealers' });
+    }
+};
+
+export const getAllUsers = async (req, res) => {
+    console.log("✅ getAllUsers endpoint hit");
+    try {
+        const users = await User.find({}, '_id name mobileNumber email profilePicture');
+        res.status(200).json(users);
+    } catch (error) {
+        console.error("❌ Error fetching users:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+export const deleteDealer = async (req, res) => {
+
+
+    try {
+        const { id } = req.params;
+        await Car.deleteMany({ dealer: id });
+        const deletedDealer = await Dealer.findByIdAndDelete(id);
+        if (!deletedDealer) {
+            return res.status(404).json({ message: "Dealer not found" });
+        }
+        res.status(200).json({ message: "Dealer deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting dealer:", error);
+        res.status(500).json({ message: "Failed to delete dealer" });
+    }
+};
+
+export const deleteUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await Booking.deleteMany({ user: id });
+        const deletedUser = await User.findByIdAndDelete(id);
+        if (!deletedUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        res.status(200).json({ message: "User deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting user:", error);
+        res.status(500).json({ message: "Failed to delete user" });
     }
 };
