@@ -44,12 +44,21 @@ export const listCars = async (req, res) => {
     try {
 
         const { ObjectId } = Types;
-        const { carType, make, minPrice, maxPrice, dealerId } = req.query;
+        const { q, carType, make, minPrice, maxPrice, dealerId } = req.query;
 
         const filter = {};
         if (dealerId && mongoose.Types.ObjectId.isValid(dealerId)) {
             filter.dealer = new ObjectId(dealerId);
         }
+        
+        if (q && typeof q === 'string' && q.trim()) {
+            const searchRegex = new RegExp(q.trim(), 'i');
+            filter.$or = [
+                { make: searchRegex },
+                { model: searchRegex },
+                { carType: searchRegex },
+            ];
+        } else {
 
         if (typeof carType === 'string' && carType.trim()) {
             filter.carType = { $regex: carType.trim(), $options: 'i' };
@@ -58,6 +67,7 @@ export const listCars = async (req, res) => {
         if (typeof make === 'string' && make.trim()) {
             filter.make = make.trim();
         }
+    }
 
         if (!isNaN(minPrice) || !isNaN(maxPrice)) {
             filter.pricePerDay = {};
@@ -67,6 +77,7 @@ export const listCars = async (req, res) => {
 
         const carList = await Car.find(filter).populate('dealer', 'name email');
             console.log("Fetched cars:", carList); 
+        console.log("Filter used:", filter);
 
         res.status(200).json(carList)
     } catch (error) {
