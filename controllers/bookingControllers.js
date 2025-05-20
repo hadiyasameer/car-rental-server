@@ -147,7 +147,7 @@ export const adminBookings = async (req, res) => {
     const bookings = await Booking.find({ status: { $ne: 'cancelled' } })
       .populate({
         path: 'carId',
-        select: 'title totalPrice image ',
+        select: 'title image ',
       })
       .populate({
         path: 'userId',
