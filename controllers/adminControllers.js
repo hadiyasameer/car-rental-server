@@ -2,6 +2,7 @@ import { Dealer } from "../models/dealerModel.js";
 import { User } from "../models/userModel.js"
 import bcrypt from "bcrypt";
 import { generateToken } from "../utils/token.js";
+import { Booking } from "../models/bookingModel.js";
 
 
 export const adminLogin = async (req, res, next) => {
