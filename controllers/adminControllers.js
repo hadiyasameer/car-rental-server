@@ -3,7 +3,7 @@ import { User } from "../models/userModel.js"
 import bcrypt from "bcrypt";
 import { generateToken } from "../utils/token.js";
 import { Booking } from "../models/bookingModel.js";
-
+import {Car} from "../models/carModel.js"
 
 export const adminLogin = async (req, res, next) => {
     try {
