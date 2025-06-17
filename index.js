@@ -15,7 +15,7 @@ seedAdmin();
 
 
 const allowedOrigins = [
-    'https://car-rental-client-mauve.vercel.app',
+    'https://ride-qatar.vercel.app/',
     'http://localhost:5173'
 ]
 app.use(cors({
