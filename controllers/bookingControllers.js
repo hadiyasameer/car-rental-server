@@ -1,6 +1,8 @@
+import transporter from '../config/transporter.js';
 import { Booking } from '../models/bookingModel.js';
 import { Car } from '../models/carModel.js';
-
+import { User } from '../models/userModel.js';
+import { sendSMS } from '../utils/sendSms.js';
 //create booking by user
 export const createBooking = async (req, res) => {
   try {
@@ -9,6 +11,7 @@ export const createBooking = async (req, res) => {
     console.log("Authenticated user:", req.user);
 
     const userId = req.user.id;
+    const user = req.user;
 
     const existingBooking = await Booking.findOne({
       carId,
@@ -43,6 +46,29 @@ export const createBooking = async (req, res) => {
 
     await booking.save();
     console.log({ userId, carId, startDate, endDate, totalPrice });
+
+    const carDetails = car;
+    await sendSMS(user.mobileNumber, `Hi ${user.name}, your Ride Qatar booking for ${carDetails.title} from ${startDate} to ${endDate} is received. Total: ${totalPrice} QR.`);
+
+    await transporter.sendMail({
+      from: `"Ride Qatar" <${process.env.EMAIL_USER}>`,
+      to: user.email,
+      subject: "Your Booking Request is Received!",
+      html: `
+    <p>Hi ${user.name},</p>
+    <p>Thanks for booking <b>${carDetails.title}</b> from Ride Qatar.</p>
+    <p><strong>Start Date:</strong> ${startDate}<br>
+    <strong>End Date:</strong> ${endDate}<br>
+    <strong>Total:</strong> ${totalPrice} QR</p>
+    <p>We’ll notify you once your booking is confirmed.</p>
+    <br>
+    <p>Regards,<br>Ride Qatar Team</p>
+  `
+    }).then(() => {
+      console.log("✅ Booking email sent");
+    }).catch((err) => {
+      console.error("❌ Failed to send booking email:", err.message);
+    });
 
     return res.status(201).json({ data: booking, message: "Booking created" });
   } catch (error) {
@@ -86,6 +112,7 @@ export const cancelBooking = async (req, res) => {
   try {
     const { bookingId } = req.params;
     const userId = req.user.id;
+    const user = req.user;
 
     const booking = await Booking.findOne({ _id: bookingId, userId });
     if (!booking) {
@@ -94,6 +121,27 @@ export const cancelBooking = async (req, res) => {
 
     booking.status = 'cancelled';
     await booking.save();
+    console.log("📧 Sending email to user:", req.user);
+
+    const carDetails = await Car.findById(booking.carId);
+    await sendSMS(user.mobileNumber, `Hi ${user.name}, your Ride Qatar booking for ${carDetails.title} has been cancelled.`);
+
+    await transporter.sendMail({
+      from: `"Ride Qatar" <${process.env.EMAIL_USER}>`,
+      to: user.email,
+      subject: "Your Booking Has Been Cancelled",
+      html: `
+    <p>Hi ${user.name},</p>
+    <p>Your booking for <b>${carDetails.title}</b> from <strong>${booking.startDate.toDateString()}</strong> to <strong>${booking.endDate.toDateString()}</strong> has been cancelled.</p>
+    <p>If this was a mistake or you have any questions, feel free to contact us.</p>
+    <br>
+    <p>Regards,<br>Ride Qatar Team</p>
+  `
+    }).then(() => {
+      console.log("✅ Cancellation email sent");
+    }).catch((err) => {
+      console.error("❌ Failed to send cancellation email:", err.message);
+    });
 
     return res.status(200).json({ message: 'Booking cancelled successfully' });
   } catch (error) {
@@ -215,3 +263,5 @@ export const getBookedDatesForCar = async (req, res) => {
     res.status(500).json({ message: error.message || "Server error" });
   }
 };
+
+

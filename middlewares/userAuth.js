@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
+import { User } from "../models/userModel.js";
 
-export const userAuth = (req, res, next) => {
+export const userAuth = async(req, res, next) => {
     try {
         const { user_token } = req.cookies;
         if (!user_token) {
@@ -12,8 +13,12 @@ export const userAuth = (req, res, next) => {
             return res.status(401).json({ message: "user not autherised", success: false })
         }
 
-        req.user = tokenVerified;
+        const user = await User.findById(tokenVerified.id).select("name email mobileNumber role");
+        if (!user) {
+            return res.status(401).json({ message: "User not found", success: false });
+        }
 
+        req.user = user;
         next();
 
     } catch (error) {
