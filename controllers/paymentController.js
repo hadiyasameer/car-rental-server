@@ -15,7 +15,7 @@ export const paymentFunction = async (req, res) => {
         currency: 'QAR', // or 'QAR' if Stripe supports it
         product_data: {
           name: booking.carId.title || 'Car Booking',
-          images: [booking.carId.image[0] || 'https://via.placeholder.com/150'], // must be a public URL
+          images: [booking.carId.image[0] || 'https://via.placeholder.com/150'], 
         },
         unit_amount: Math.round(booking.totalPrice * 100),
       },
