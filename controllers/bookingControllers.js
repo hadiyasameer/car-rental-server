@@ -2,7 +2,7 @@ import transporter from '../config/transporter.js';
 import { Booking } from '../models/bookingModel.js';
 import { Car } from '../models/carModel.js';
 import { User } from '../models/userModel.js';
-import { sendSMS } from '../utils/sendSms.js';
+import { sendSMS } from '../utils/sendSMS.js';
 //create booking by user
 export const createBooking = async (req, res) => {
   try {
