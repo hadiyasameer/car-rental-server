@@ -24,13 +24,13 @@ export const dealerSignup = async (req, res, next) => {
         const newDealer = new Dealer({ name, email, password: hashedPassword, mobileNumber, profilePicture })
         await newDealer.save();
 
-        const tokenPayload = (newDealer._id, "dealer" );
+        const tokenPayload = (newDealer._id, "dealer");
         const dealer_token = generateToken(tokenPayload);
-        
+
         res.cookie("dealer_token", dealer_token, {
             sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
             secure: process.env.NODE_ENV === "production",
-            httponly: process.env.NODE_ENV === "production"
+            httpOnly: process.env.NODE_ENV === "production"
         })
         return res.status(201).json({ data: newDealer, message: "dealer account created" })
     } catch (error) {
@@ -54,14 +54,16 @@ export const dealerLogin = async (req, res, next) => {
             return res.status(401).json({ message: "dealer not authenticated" })
         }
 
-      
+
         const dealer_token = generateToken(isDealerExist._id, "dealer");
 
-        
+
         res.cookie("dealer_token", dealer_token, {
             sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
             secure: process.env.NODE_ENV === "production",
-            httponly: process.env.NODE_ENV === "production"
+            httpOnly: process.env.NODE_ENV === "production",
+            maxAge: 3 * 24 * 60 * 60 * 1000
+
         })
         {
             const { password, ...userDataWithoutPassword } = isDealerExist._doc;
@@ -77,7 +79,7 @@ export const dealerLogout = async (req, res, next) => {
         res.clearCookie("dealer_token", {
             sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
             secure: process.env.NODE_ENV === "production",
-            httponly: process.env.NODE_ENV === "production"
+            httpOnly: process.env.NODE_ENV === "production"
         })
         return res.json({ message: "dealer logout successful" })
     } catch (error) {

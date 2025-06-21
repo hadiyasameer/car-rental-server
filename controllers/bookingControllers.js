@@ -42,6 +42,17 @@ export const createBooking = async (req, res) => {
       rentalDays,
       totalPrice,
       status: "pending",
+      carSnapshot: {
+        title: car.title,
+        make: car.make,
+        image: car.image,
+        pricePerDay: car.pricePerDay,
+        fuelType: car.fuelType,
+        capacity: car.capacity,
+        transmission: car.transmission,
+        carType: car.carType,
+        dealer: car.dealer,
+      }
     });
 
     await booking.save();
@@ -81,14 +92,28 @@ export const createBooking = async (req, res) => {
 export const viewBookings = async (req, res) => {
   try {
     const userId = req.user.id;
+
     const bookings = await Booking.find({
-      userId, status: 'pending'
+      userId,
+      status: 'pending'
     }).populate('carId');
-    return res.status(200).json(bookings);
+
+    const formattedBookings = bookings.map(booking => {
+      const bookingObj = booking.toObject();
+      const car = bookingObj.carId || bookingObj.carSnapshot;
+
+      return {
+        ...bookingObj,
+        car,
+      };
+    });
+
+    return res.status(200).json(formattedBookings);
   } catch (error) {
     return res.status(500).json({ message: error.message || 'Server error' });
   }
 };
+
 //user's confirmed booking
 // export const viewConfirmedBookings = async (req, res) => {
 //   try {
@@ -123,7 +148,7 @@ export const cancelBooking = async (req, res) => {
     await booking.save();
     console.log("📧 Sending email to user:", req.user);
 
-    const carDetails = await Car.findById(booking.carId);
+    const carDetails = await Car.findById(booking.carId) || booking.carSnapshot;
     await sendSMS(user.mobileNumber, `Hi ${user.name}, your Ride Qatar booking for ${carDetails.title} has been cancelled.`);
 
     await transporter.sendMail({
@@ -195,14 +220,28 @@ export const adminBookings = async (req, res) => {
     const bookings = await Booking.find({ status: { $ne: 'cancelled' } })
       .populate({
         path: 'carId',
-        select: 'title image ',
+        select: 'title image',
       })
       .populate({
         path: 'userId',
         select: 'name email',
       });
+    const enrichedBookings = bookings.map(b => {
+      const bObj = b.toObject();
+      const carLive = bObj.carId;
+      const car = carLive || bObj.carSnapshot;
 
-    return res.status(200).json({ data: bookings, message: "All bookings fetched successfully" });
+      return {
+        ...bObj,
+        car: {
+          ...car,
+          wasDeleted: !carLive
+        }
+      }
+    });
+
+    return res.status(200).json({ data: enrichedBookings, message: "All bookings fetched successfully" });
+
   } catch (error) {
     return res.status(500).json({ message: error.message || 'Server error' });
   }
@@ -234,8 +273,16 @@ export const dealerBookings = async (req, res) => {
         path: 'userId',
         select: 'name email',
       });
+    const enrichedBookings = bookings.map(b => {
+      const bObj = b.toObject();
+      return {
+        ...bObj,
+        car: bObj.carId || bObj.carSnapshot,
+      };
+    });
 
-    return res.status(200).json({ data: bookings, message: "Bookings for dealer's cars fetched successfully" });
+    return res.status(200).json({ data: enrichedBookings, message: "Bookings for dealer's cars fetched successfully" });
+
   } catch (error) {
     return res.status(500).json({ message: error.message || 'Server error' });
   }

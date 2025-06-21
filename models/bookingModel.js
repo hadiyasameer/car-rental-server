@@ -8,6 +8,7 @@ const bookingSchema = new Schema({
   totalPrice: { type: Number, required: true },
   rentalDays: { type: Number, required: true },
   status: { type: String, enum: ['pending', 'confirmed', 'completed', 'cancelled'], default: 'pending' },
+  carSnapshot: { type: Object, required: true, },
   createdAt: { type: Date, default: Date.now },
 });
 

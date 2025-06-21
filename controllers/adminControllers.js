@@ -31,6 +31,7 @@ export const adminLogin = async (req, res, next) => {
             sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
             secure: process.env.NODE_ENV === "production",
             httpOnly: true,
+            maxAge: 3 * 24 * 60 * 60 * 1000 
         });
 
         const { password: _, ...adminData } = admin._doc;
@@ -46,7 +47,7 @@ export const adminLogout = async (req, res, next) => {
         res.clearCookie("admin_token", {
             sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
             secure: process.env.NODE_ENV === "production",
-            httponly: process.env.NODE_ENV === "production"
+            httpOnly: process.env.NODE_ENV === "production"
         })
         return res.json({ message: "admin logout successful" })
     } catch (error) {
@@ -77,8 +78,6 @@ export const getAllUsers = async (req, res) => {
 };
 
 export const deleteDealer = async (req, res) => {
-
-
     try {
         const { id } = req.params;
         await Car.deleteMany({ dealer: id });

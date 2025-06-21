@@ -27,7 +27,7 @@ export const userSignup = async (req, res, next) => {
         res.cookie("user_token", user_token, {
             sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
             secure: process.env.NODE_ENV === "production",
-            httponly: process.env.NODE_ENV === "production"
+            httpOnly: process.env.NODE_ENV === "production"
         })
         return res.status(201).json({ data: userData, message: "user account created" })
     } catch (error) {
@@ -54,7 +54,9 @@ export const userLogin = async (req, res, next) => {
         res.cookie("user_token", user_token, {
             sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
             secure: process.env.NODE_ENV === "production",
-            httponly: process.env.NODE_ENV === "production"
+            httpOnly: process.env.NODE_ENV === "production",
+            maxAge: 3 * 24 * 60 * 60 * 1000
+
         })
         {
             const { password, ...userDataWithoutPassword } = userExist._doc;
@@ -70,7 +72,7 @@ export const userLogout = async (req, res, next) => {
         res.clearCookie("user_token", {
             sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
             secure: process.env.NODE_ENV === "production",
-            httponly: process.env.NODE_ENV === "production"
+            httpOnly: process.env.NODE_ENV === "production"
         })
         return res.json({ message: "user logout successful" })
     } catch (error) {
@@ -90,11 +92,11 @@ export const userProfile = async (req, res, next) => {
 
 }
 
-export const checkUser=async(req,res,next)=>{
+export const checkUser = async (req, res, next) => {
     try {
-        return res.json({message:"user authorised"})
+        return res.json({ message: "user authorised" })
     } catch (error) {
         return res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" })
-        
+
     }
 }
