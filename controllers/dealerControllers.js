@@ -59,11 +59,10 @@ export const dealerLogin = async (req, res, next) => {
 
 
         res.cookie("dealer_token", dealer_token, {
-            sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
-            secure: process.env.NODE_ENV === "production",
-            httpOnly: process.env.NODE_ENV === "production",
+            httpOnly: true,
+            secure: true,
+            sameSite: "None",
             maxAge: 3 * 24 * 60 * 60 * 1000
-
         })
         {
             const { password, ...userDataWithoutPassword } = isDealerExist._doc;

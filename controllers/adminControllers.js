@@ -3,7 +3,7 @@ import { User } from "../models/userModel.js"
 import bcrypt from "bcrypt";
 import { generateToken } from "../utils/token.js";
 import { Booking } from "../models/bookingModel.js";
-import {Car} from "../models/carModel.js"
+import { Car } from "../models/carModel.js"
 
 export const adminLogin = async (req, res, next) => {
     try {
@@ -28,10 +28,10 @@ export const adminLogin = async (req, res, next) => {
         const admin_token = generateToken(admin._id, "admin");
 
         res.cookie("admin_token", admin_token, {
-            sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
-            secure: process.env.NODE_ENV === "production",
             httpOnly: true,
-            maxAge: 3 * 24 * 60 * 60 * 1000 
+            secure: true,
+            sameSite: "None",
+            maxAge: 3 * 24 * 60 * 60 * 1000
         });
 
         const { password: _, ...adminData } = admin._doc;

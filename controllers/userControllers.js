@@ -52,9 +52,9 @@ export const userLogin = async (req, res, next) => {
         }
         const user_token = generateToken(userExist._id)
         res.cookie("user_token", user_token, {
-            sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
-            secure: process.env.NODE_ENV === "production",
-            httpOnly: process.env.NODE_ENV === "production",
+            httpOnly: true,
+            secure: true,
+            sameSite: "None",
             maxAge: 3 * 24 * 60 * 60 * 1000
 
         })
