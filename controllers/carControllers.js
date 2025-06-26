@@ -42,50 +42,92 @@ export const createCar = async (req, res) => {
 
 export const listCars = async (req, res) => {
     try {
-
         const { ObjectId } = Types;
-        const { q, carType, make, minPrice, maxPrice, dealerId } = req.query;
+        let {
+            q, carType, make, fuelType, transmission,
+            location, price, dealerId
+        } = req.query;
+
+        let minPrice = NaN;
+        let maxPrice = NaN;
+
+        if (price) {
+            if (price.includes('+')) {
+                minPrice = parseInt(price.replace('+', ''), 10);
+            } else if (price.includes('-')) {
+                const [min, max] = price.split('-').map(str => parseInt(str, 10));
+                minPrice = min;
+                maxPrice = max;
+            }
+        }
+
 
         const filter = {};
+
+        // Filter by dealer
         if (dealerId && mongoose.Types.ObjectId.isValid(dealerId)) {
             filter.dealer = new ObjectId(dealerId);
         }
-        
+
+        // Keyword search
         if (q && typeof q === 'string' && q.trim()) {
             const searchRegex = new RegExp(q.trim(), 'i');
             filter.$or = [
                 { make: searchRegex },
                 { model: searchRegex },
-                { carType: searchRegex },
+                { carType: searchRegex }
             ];
-        } else {
+        }
 
-        if (typeof carType === 'string' && carType.trim()) {
+        // Car type
+        if (carType && carType.trim()) {
             filter.carType = { $regex: carType.trim(), $options: 'i' };
         }
 
-        if (typeof make === 'string' && make.trim()) {
-            filter.make = make.trim();
+        // Make
+        if (make && make.trim()) {
+            filter.make = { $regex: make.trim(), $options: 'i' };
         }
-    }
 
+        // Fuel type
+        if (fuelType && fuelType.trim()) {
+            filter.fuelType = { $regex: fuelType.trim(), $options: 'i' };
+        }
+
+        // Transmission
+        if (transmission && transmission.trim()) {
+            filter.transmission = { $regex: transmission.trim(), $options: 'i' };
+        }
+
+        // Location
+        if (location && location.trim()) {
+            filter.location = { $regex: location.trim(), $options: 'i' };
+        }
+
+        // Price range
         if (!isNaN(minPrice) || !isNaN(maxPrice)) {
             filter.pricePerDay = {};
-            if (!isNaN(minPrice)) filter.pricePerDay.$gte = Number(minPrice);
-            if (!isNaN(maxPrice)) filter.pricePerDay.$lte = Number(maxPrice);
+            if (!isNaN(minPrice)) {
+                filter.pricePerDay.$gte = minPrice;
+            }
+            if (!isNaN(maxPrice)) {
+                filter.pricePerDay.$lte = maxPrice;
+            }
         }
 
         const carList = await Car.find(filter).populate('dealer', 'name email');
-            console.log("Fetched cars:", carList); 
         console.log("Filter used:", filter);
+        console.log("Fetched cars:", carList.length);
 
-        res.status(200).json(carList)
+        res.status(200).json(carList);
     } catch (error) {
-        console.log(error);
-
-        return res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" })
+        console.error("Error in listCars:", error);
+        res.status(error.statusCode || 500).json({
+            message: error.message || "Internal server error"
+        });
     }
-}
+};
+
 
 export const updateCar = async (req, res) => {
     try {
@@ -146,18 +188,3 @@ export const deleteCar = async (req, res) => {
     }
 }
 
-// export const dealerCars = async (req, res) => {
-//   try {
-//     const dealerId = req.user.id;
-
-//     const dealerCars = await Car.find({ dealer: dealerId });
-
-//     if (dealerCars.length === 0) {
-//       return res.status(200).json({ data: [], message: "No cars added yet" });
-//     }
-
-    
-//   } catch (error) {
-//     return res.status(500).json({ message: error.message || 'Server error' });
-//   }
-// };
