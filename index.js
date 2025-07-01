@@ -27,7 +27,7 @@ app.use(cors({
         }
     },
     credentials: true,
-    methods: ["GET", "PUT", "POST", "DELETE", "OPTIONS"],
+    methods: ["GET", "PUT", "POST", "DELETE","PATCH", "OPTIONS"],
     preflightContinue: false,
     optionsSuccessStatus: 204
 })

@@ -1,5 +1,7 @@
 import Stripe from 'stripe';
 import dotenv from 'dotenv';
+import { Notification } from '../models/notificationModel.js';
+import { Car } from '../models/carModel.js'; 
 
 dotenv.config();
 
@@ -8,14 +10,14 @@ const stripe = new Stripe(process.env.STRIPE_SECRET);
 export const paymentFunction = async (req, res) => {
   try {
     const { bookings } = req.body;
-    console.log("Received bookings:", bookings);
+    const userId = req.user._id;
 
     const line_items = bookings.map((booking) => ({
       price_data: {
-        currency: 'QAR', // or 'QAR' if Stripe supports it
+        currency: 'QAR',
         product_data: {
           name: booking.carId.title || 'Car Booking',
-          images: [booking.carId.image[0] || 'https://via.placeholder.com/150'], 
+          images: [booking.carId.image[0] || 'https://via.placeholder.com/150'],
         },
         unit_amount: Math.round(booking.totalPrice * 100),
       },
@@ -30,9 +32,23 @@ export const paymentFunction = async (req, res) => {
       cancel_url: `${process.env.FRONTEND_URL}/payment/failed`,
     });
 
+    for (const booking of bookings) {
+      if (booking.deliveryType === 'Delivery') {
+        const car = await Car.findById(booking.carId).populate('dealer');
+        if (car?.dealer) {
+          await Notification.create({
+            userId,
+            dealerId: car.dealer._id,
+            carId: car._id,
+            message: `New delivery booking for ${car.title} to ${booking.deliveryAddress}`,
+          });
+        }
+      }
+    }
+
     res.status(200).json({ success: true, sessionId: session.id });
   } catch (error) {
-    console.error("Payment processing error:", error);  // Log more detailed error info
+    console.error("Payment processing error:", error);
     res.status(error.status || 500).json({ error: error.message || 'Internal server error' });
   }
 };
