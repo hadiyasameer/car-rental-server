@@ -1,14 +1,12 @@
 import jwt from "jsonwebtoken";
-const maxAge=3*24*60*60;
-
-export const generateToken = (id, role="user") => {
+const maxAge = 3 * 24 * 60 * 60;
+export const generateToken = (payload) => {
     try {
-        const payload = { id, role };
-        const token= jwt.sign(payload, process.env.JWT_SECRET_KEY,{
-            expiresIn:maxAge
+        return jwt.sign(payload, process.env.JWT_SECRET_KEY, {
+            expiresIn: maxAge
         });
-        return token;
     } catch (error) {
-        console.log(error)
+        console.error("Token generation error:", error);
+        throw new Error("Failed to generate token");
     }
-}
+};

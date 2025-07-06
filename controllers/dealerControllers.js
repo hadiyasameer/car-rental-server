@@ -4,6 +4,14 @@ import { generateToken } from "../utils/token.js";
 import { Notification } from "../models/notificationModel.js";
 import { Types } from "mongoose";
 
+const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+    maxAge: 3 * 24 * 60 * 60 * 1000,
+};
+
+
 export const dealerSignup = async (req, res, next) => {
     try {
         console.log("hitted");
@@ -26,15 +34,11 @@ export const dealerSignup = async (req, res, next) => {
         const newDealer = new Dealer({ name, email, password: hashedPassword, mobileNumber, profilePicture })
         await newDealer.save();
 
-        const tokenPayload = (newDealer._id, "dealer");
-        const dealer_token = generateToken(tokenPayload);
+        const dealer_token = generateToken({ id: newDealer._id, role: "dealer" });
 
-        res.cookie("dealer_token", dealer_token, {
-            sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
-            secure: process.env.NODE_ENV === "production",
-            httpOnly: process.env.NODE_ENV === "production"
-        })
-        return res.status(201).json({ data: newDealer, message: "dealer account created" })
+        res.cookie("dealer_token", dealer_token, cookieOptions);
+
+        return res.status(201).json({ data: newDealer, dealer_token, message: "dealer account created" });
     } catch (error) {
         return res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" })
     }
@@ -57,15 +61,10 @@ export const dealerLogin = async (req, res, next) => {
         }
 
 
-        const dealer_token = generateToken(isDealerExist._id, "dealer");
+        const dealer_token = generateToken({ id: isDealerExist._id, role: "dealer" });
 
 
-        res.cookie("dealer_token", dealer_token, {
-            httpOnly: true,
-            secure: true,
-            sameSite: "None",
-            maxAge: 3 * 24 * 60 * 60 * 1000
-        })
+        res.cookie("dealer_token", dealer_token, cookieOptions);
         {
             const { password, ...userDataWithoutPassword } = isDealerExist._doc;
             return res.json({ data: userDataWithoutPassword, message: "dealer login success" })
@@ -78,10 +77,10 @@ export const dealerLogin = async (req, res, next) => {
 export const dealerLogout = async (req, res, next) => {
     try {
         res.clearCookie("dealer_token", {
-            sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
-            secure: process.env.NODE_ENV === "production",
-            httpOnly: process.env.NODE_ENV === "production"
-        })
+            ...cookieOptions,
+            maxAge: undefined
+        });
+
         return res.json({ message: "dealer logout successful" })
     } catch (error) {
         return res.status(error.statusCode || 500).json({ message: error.message || "Internal server error" })
@@ -92,7 +91,7 @@ export const dealerLogout = async (req, res, next) => {
 export const dealerProfile = async (req, res, next) => {
     try {
 
-        const dealerId = req.user.id;
+        const dealerId = req.user?.id || req.user?._id;
         const dealerData = await Dealer.findById(dealerId).select("-password")
         return res.json({ data: dealerData, message: "dealer profile fetched" })
     } catch (error) {
@@ -150,7 +149,7 @@ export const markNotificationAsRead = async (req, res) => {
         const { id } = req.params;
 
         const updated = await Notification.findOneAndUpdate(
-            { _id: id, dealer: req.user._id }, // 🔄 fix here
+            { _id: id, dealerId: req.user._id }, // 🔄 fix here
             { isRead: true },
             { new: true }
         );
