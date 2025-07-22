@@ -6,6 +6,7 @@ import { carRouter } from "./carRouter.js";
 import { bookingRouter } from "./bookingRouter.js";
 import { paymentRouter } from "./paymentRoutes.js";
 import { subscriptionRouter } from "./subscriptionRoutes.js";
+import { quickBookingRouter } from "./quickBookingRoute.js";
 
 const router = e.Router();
 
@@ -16,5 +17,7 @@ router.use("/car", carRouter)
 router.use("/booking", bookingRouter)
 router.use("/payment", paymentRouter)
 router.use("/subscribe", subscriptionRouter)
+router.use("/quick",quickBookingRouter);
+
 
 export { router as apiRouter }

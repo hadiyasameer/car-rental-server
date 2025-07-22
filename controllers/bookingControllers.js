@@ -7,19 +7,25 @@ import { sendSMS } from '../utils/sendSMS.js';
 export const createBooking = async (req, res) => {
   try {
     const carId = req.params.carId;
-    const { startDate, endDate } = req.body;
-    console.log("Authenticated user:", req.user);
-
-    const userId = req.user.id;
+    const { startDate, endDate, deliveryAddress, deliveryCoordinates } = req.body;
     const user = req.user;
+    const userId = user.id;
 
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (isNaN(start) || isNaN(end) || end <= start) {
+      return res.status(400).json({ message: "Invalid start or end date" });
+    }
+
+    // Check availability
     const existingBooking = await Booking.findOne({
       carId,
       status: { $in: ['pending', 'confirmed'] },
       $or: [
         {
-          startDate: { $lte: new Date(endDate) },
-          endDate: { $gte: new Date(startDate) },
+          startDate: { $lte: end },
+          endDate: { $gte: start },
         }
       ]
     });
@@ -28,27 +34,45 @@ export const createBooking = async (req, res) => {
       return res.status(400).json({ message: "Car is not available during the selected dates." });
     }
 
+    // Fetch car
     const car = await Car.findById(carId);
     if (!car) return res.status(404).json({ message: "Car not found" });
 
-    const rentalDays = (new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24) + 1;
+    // Time-based pricing calculation
+    const durationMs = end - start;
+    const totalHours = durationMs / (1000 * 60 * 60);
+    let rentalDays = 1;
+
+    if (totalHours > 24) {
+      const extraHours = totalHours - 24;
+      // rentalDays = 1 + Math.floor(extraHours / 24);
+
+      // Add an extra day if leftover is 12 hours or more
+      if ((extraHours % 24) >= 12) {
+        rentalDays += 1;
+      }
+    }
+
     const totalPrice = rentalDays * car.pricePerDay;
 
+    // Create booking
     const booking = new Booking({
       userId,
       carId,
-      startDate,
-      endDate,
+      startDate: start,
+      endDate: end,
       rentalDays,
       totalPrice,
       status: "pending",
+      deliveryAddress,
+      deliveryCoordinates,
       carSnapshot: {
         title: car.title,
         make: car.make,
         image: car.image,
         pricePerDay: car.pricePerDay,
         fuelType: car.fuelType,
-        capacity: car.capacity,
+        seatingCapacity: car.seatingCapacity,
         transmission: car.transmission,
         carType: car.carType,
         dealer: car.dealer,
@@ -56,37 +80,43 @@ export const createBooking = async (req, res) => {
     });
 
     await booking.save();
-    console.log({ userId, carId, startDate, endDate, totalPrice });
 
-    const carDetails = car;
-    await sendSMS(user.mobileNumber, `Hi ${user.name}, your Ride Qatar booking for ${carDetails.title} from ${startDate} to ${endDate} is received. Total: ${totalPrice} QR.`);
+    console.log("📦 Booking saved:", { userId, carId, rentalDays, totalPrice });
 
+    // Send SMS
+    await sendSMS(user.mobileNumber, `Hi ${user.name}, your Ride Qatar booking for ${car.title} from ${start.toLocaleString()} to ${end.toLocaleString()} is received. Total: ${totalPrice} QR.`);
+
+    // Send Email
     await transporter.sendMail({
       from: `"Ride Qatar" <${process.env.EMAIL_USER}>`,
       to: user.email,
       subject: "Your Booking Request is Received!",
       html: `
-    <p>Hi ${user.name},</p>
-    <p>Thanks for booking <b>${carDetails.title}</b> from Ride Qatar.</p>
-    <p><strong>Start Date:</strong> ${startDate}<br>
-    <strong>End Date:</strong> ${endDate}<br>
-    <strong>Total:</strong> ${totalPrice} QR</p>
-    <p>We’ll notify you once your booking is confirmed.</p>
-    <br>
-    <p>Regards,<br>Ride Qatar Team</p>
-  `
+        <p>Hi ${user.name},</p>
+        <p>Thanks for booking <b>${car.title}</b> from Ride Qatar.</p>
+        <p><strong>Start:</strong> ${start.toLocaleString()}<br>
+        <strong>End:</strong> ${end.toLocaleString()}<br>
+        <strong>Duration:</strong> ${rentalDays} day(s)<br>
+        <strong>Total:</strong> ${totalPrice} QR</p>
+        <p>We’ll notify you once your booking is confirmed.</p>
+        <br>
+        <p>Regards,<br>Ride Qatar Team</p>
+      `
     }).then(() => {
-      console.log("✅ Booking email sent");
+      console.log("📧 Booking email sent");
     }).catch((err) => {
       console.error("❌ Failed to send booking email:", err.message);
     });
 
     return res.status(201).json({ data: booking, message: "Booking created" });
+
   } catch (error) {
-    console.error('Error creating booking:', error); // helpful for debugging
+    console.error("❌ Error creating booking:", error);
     return res.status(500).json({ message: error.message || "Server error" });
   }
 };
+
+
 
 // Get user's bookings
 export const viewBookings = async (req, res) => {
@@ -113,23 +143,6 @@ export const viewBookings = async (req, res) => {
     return res.status(500).json({ message: error.message || 'Server error' });
   }
 };
-
-//user's confirmed booking
-// export const viewConfirmedBookings = async (req, res) => {
-//   try {
-//     const userId = req.user.id;
-
-//     const bookings = await Booking.find({
-//       userId,
-//       status: 'confirmed'
-//     }).populate('carId');
-
-//     res.status(200).json(bookings);
-//   } catch (error) {
-//     console.error('Error fetching confirmed bookings:', error);
-//     res.status(500).json({ message: error.message || 'Server error' });
-//   }
-// };
 
 
 // Cancel booking
@@ -197,17 +210,6 @@ export const clearBooking = async (req, res) => {
     return res.status(500).json({ message: error.message || 'Server error' });
   }
 };
-
-//update booking status
-// export const updateBookingStatus = async (req, res) => {
-//   try {
-//     const { status } = req.body;
-//     await Booking.findByIdAndUpdate(req.params.id, { status });
-//     res.json({ success: true });
-//   } catch (err) {
-//     res.status(500).json({ error: 'Failed to update booking status' });
-//   }
-// };
 
 
 //Admin only booking list

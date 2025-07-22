@@ -9,6 +9,11 @@ const bookingSchema = new Schema({
   rentalDays: { type: Number, required: true },
   status: { type: String, enum: ['pending', 'confirmed', 'completed', 'cancelled'], default: 'pending' },
   carSnapshot: { type: Object, required: true, },
+  deliveryAddress: { type: String },
+  deliveryCoordinates: {
+    lat: { type: Number },
+    lng: { type: Number }
+  },
   createdAt: { type: Date, default: Date.now },
 });
 

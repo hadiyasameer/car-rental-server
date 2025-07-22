@@ -19,6 +19,7 @@ export const dealerAuth = (requiredRole = 'dealer') => {
             }
 
             req.user = tokenVerified;
+            req.user._id = tokenVerified.id; 
 
             next();
 

@@ -1,7 +1,7 @@
 import Stripe from 'stripe';
 import dotenv from 'dotenv';
 import { Notification } from '../models/notificationModel.js';
-import { Car } from '../models/carModel.js'; 
+import { Car } from '../models/carModel.js';
 
 dotenv.config();
 
@@ -10,19 +10,22 @@ const stripe = new Stripe(process.env.STRIPE_SECRET);
 export const paymentFunction = async (req, res) => {
   try {
     const { bookings } = req.body;
-    const userId = req.user._id;
+    const userId = req.user?._id || null;
 
     const line_items = bookings.map((booking) => ({
       price_data: {
-        currency: 'QAR',
+        currency: "QAR",
         product_data: {
-          name: booking.carId.title || 'Car Booking',
-          images: [booking.carId.image[0] || 'https://via.placeholder.com/150'],
+          name: booking.carId?.title || "Rental Car",
+          images: booking.carId?.image?.[0]
+            ? [booking.carId.image[0]]
+            : ["https://via.placeholder.com/300x200?text=Car+Image"],
         },
         unit_amount: Math.round(booking.totalPrice * 100),
       },
       quantity: 1,
     }));
+
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -34,7 +37,7 @@ export const paymentFunction = async (req, res) => {
 
     for (const booking of bookings) {
       if (booking.deliveryType === 'Delivery') {
-        const car = await Car.findById(booking.carId).populate('dealer');
+        const car = await Car.findById(booking.carId._id).populate('dealer');
         if (car?.dealer) {
           await Notification.create({
             userId,

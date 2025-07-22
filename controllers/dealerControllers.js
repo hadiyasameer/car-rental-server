@@ -147,9 +147,11 @@ export const markNotificationAsRead = async (req, res) => {
         console.log("Mark notification hit:", req.params.id, req.user?._id);
 
         const { id } = req.params;
+        console.log("Mark notification as read for id:", id);
+        console.log("Dealer id from token:", req.user._id);
 
         const updated = await Notification.findOneAndUpdate(
-            { _id: id, dealerId: req.user._id }, // 🔄 fix here
+            { _id: id, dealerId: req.user._id },
             { isRead: true },
             { new: true }
         );
