@@ -28,7 +28,7 @@ Stay tuned and get ready to enjoy a smoother and more affordable car rental expe
 
 Warm regards,  
 The QRidey Team  
-ride-qatar.vercel.app`;
+qridey.vercel.app`;
 
     const messageHtml = `
     <b>Hi,</b><br><br>
@@ -37,7 +37,7 @@ ride-qatar.vercel.app`;
     Stay tuned and get ready to enjoy a smoother and more affordable car rental experience across Qatar!<br><br>
     Warm regards,<br>
     <b>The QRidey Team</b><br>
-    <a href="https://ride-qatar.vercel.app/">ride-qatar.vercel.app</a>
+    <a href="https://qridey.vercel.app/">qridey.vercel.app</a>
     `;
 
     try {
