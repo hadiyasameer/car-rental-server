@@ -7,19 +7,22 @@ import dotenv from "dotenv";
 import seedAdmin from "./utils/seedAdmin.js";
 
 dotenv.config();
+
 connectDB();
 seedAdmin();
 
 const app = express();
 
+// ✅ Allowed origins
 const allowedOrigins = [
   "https://qridey.vercel.app",
   "http://localhost:5173",
 ];
 
+// ✅ CORS Middleware
 app.use(
   cors({
-    origin: function (origin, callback) {
+    origin: (origin, callback) => {
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
@@ -31,28 +34,29 @@ app.use(
   })
 );
 
-// ✅ Handle preflight requests explicitly
+// ✅ Explicitly handle OPTIONS preflight
 app.options("*", cors());
 
-// ✅ Middleware
 app.use(express.json());
 app.use(cookieParser());
 
+// ✅ Test route
 app.get("/", (req, res) => {
   res.send("hi");
 });
 
+// ✅ API routes
 app.use("/api", apiRouter);
 
-// ✅ Ensure CORS headers on errors too
+// ✅ Global error handler to include CORS headers even on errors
 app.use((err, req, res, next) => {
   res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
   res.header("Access-Control-Allow-Credentials", "true");
-  console.error(err.stack);
-  res.status(500).json({ message: "Server Error", error: err.message });
+  console.error("Error:", err.stack);
+  res.status(500).json({ message: "Server error", error: err.message });
 });
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+  console.log(`✅ Server running on port ${port}`);
 });
