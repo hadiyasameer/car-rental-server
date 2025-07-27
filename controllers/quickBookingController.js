@@ -48,7 +48,7 @@ export const createQuickBooking = async (req, res) => {
 
     await quickBooking.save();
 
-    await sendSMS(mobileNumber, `Hi ${name}, your Ride Qatar quick booking for ${car.title} from ${start.toLocaleString()} to ${end.toLocaleString()} is received. Total: ${totalPrice} QR.`);
+    await sendSMS(mobileNumber, `Hi ${name}, your QRidey quick booking for ${car.title} from ${start.toLocaleString()} to ${end.toLocaleString()} is received. Total: ${totalPrice} QR.`);
 
     return res.status(201).json({ quickBooking: quickBooking });
   } catch (err) {

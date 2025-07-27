@@ -84,23 +84,23 @@ export const createBooking = async (req, res) => {
     console.log("📦 Booking saved:", { userId, carId, rentalDays, totalPrice });
 
     // Send SMS
-    await sendSMS(user.mobileNumber, `Hi ${user.name}, your Ride Qatar booking for ${car.title} from ${start.toLocaleString()} to ${end.toLocaleString()} is received. Total: ${totalPrice} QR.`);
+    await sendSMS(user.mobileNumber, `Hi ${user.name}, your QRidey booking for ${car.title} from ${start.toLocaleString()} to ${end.toLocaleString()} is received. Total: ${totalPrice} QR.`);
 
     // Send Email
     await transporter.sendMail({
-      from: `"Ride Qatar" <${process.env.EMAIL_USER}>`,
+      from: `"QRidey" <${process.env.EMAIL_USER}>`,
       to: user.email,
       subject: "Your Booking Request is Received!",
       html: `
         <p>Hi ${user.name},</p>
-        <p>Thanks for booking <b>${car.title}</b> from Ride Qatar.</p>
+        <p>Thanks for booking <b>${car.title}</b> from QRidey.</p>
         <p><strong>Start:</strong> ${start.toLocaleString()}<br>
         <strong>End:</strong> ${end.toLocaleString()}<br>
         <strong>Duration:</strong> ${rentalDays} day(s)<br>
         <strong>Total:</strong> ${totalPrice} QR</p>
         <p>We’ll notify you once your booking is confirmed.</p>
         <br>
-        <p>Regards,<br>Ride Qatar Team</p>
+        <p>Regards,<br>QRidey Team</p>
       `
     }).then(() => {
       console.log("📧 Booking email sent");
@@ -162,10 +162,10 @@ export const cancelBooking = async (req, res) => {
     console.log("📧 Sending email to user:", req.user);
 
     const carDetails = await Car.findById(booking.carId) || booking.carSnapshot;
-    await sendSMS(user.mobileNumber, `Hi ${user.name}, your Ride Qatar booking for ${carDetails.title} has been cancelled.`);
+    await sendSMS(user.mobileNumber, `Hi ${user.name}, your QRidey booking for ${carDetails.title} has been cancelled.`);
 
     await transporter.sendMail({
-      from: `"Ride Qatar" <${process.env.EMAIL_USER}>`,
+      from: `"QRidey" <${process.env.EMAIL_USER}>`,
       to: user.email,
       subject: "Your Booking Has Been Cancelled",
       html: `
@@ -173,7 +173,7 @@ export const cancelBooking = async (req, res) => {
     <p>Your booking for <b>${carDetails.title}</b> from <strong>${booking.startDate.toDateString()}</strong> to <strong>${booking.endDate.toDateString()}</strong> has been cancelled.</p>
     <p>If this was a mistake or you have any questions, feel free to contact us.</p>
     <br>
-    <p>Regards,<br>Ride Qatar Team</p>
+    <p>Regards,<br>QRidey Team</p>
   `
     }).then(() => {
       console.log("✅ Cancellation email sent");

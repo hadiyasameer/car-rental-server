@@ -17,26 +17,26 @@ const transporter = nodemailer.createTransport({
 export const subscribeUser = async (req, res) => {
     const { email } = req.body;
 
-    const subject = "Thank You for Subscribing to Ride Qatar!";
+    const subject = "Thank You for Subscribing to QRidey!";
     const messageText = `Hi,
 
-Thank you for subscribing to Ride Qatar! 🎉
+Thank you for subscribing to QRidey! 🎉
 
 You’re now on the list to receive updates about our latest cars, exclusive offers, and travel tips straight to your inbox.
 
 Stay tuned and get ready to enjoy a smoother and more affordable car rental experience across Qatar!
 
 Warm regards,  
-The Ride Qatar Team  
+The QRidey Team  
 ride-qatar.vercel.app`;
 
     const messageHtml = `
     <b>Hi,</b><br><br>
-    Thank you for subscribing to <b>Ride Qatar</b>! 🎉<br><br>
+    Thank you for subscribing to <b>QRidey</b>! 🎉<br><br>
     You’re now on the list to receive updates about our latest cars, exclusive offers, and travel tips straight to your inbox.<br><br>
     Stay tuned and get ready to enjoy a smoother and more affordable car rental experience across Qatar!<br><br>
     Warm regards,<br>
-    <b>The Ride Qatar Team</b><br>
+    <b>The QRidey Team</b><br>
     <a href="https://ride-qatar.vercel.app/">ride-qatar.vercel.app</a>
     `;
 
@@ -50,7 +50,7 @@ ride-qatar.vercel.app`;
         await Subscriber.create({ email });
 
         const info = await transporter.sendMail({
-            from: `"RideQatar" <${process.env.EMAIL_USER}>`,
+            from: `"QRidey" <${process.env.EMAIL_USER}>`,
             to: email,
             subject,
             text: messageText,
